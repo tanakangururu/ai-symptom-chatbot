@@ -29,20 +29,81 @@ class ThesisSymptomChatbot:
         self.conversation_history = []
         
         # Rule-based symptom database (Thesis: rule-based logic)
+             
         self.symptom_rules = {
             "fever": {
-                "conditions": ["Influenza", "Common Cold", "Malaria"],
-                "questions": ["Temperature?", "Duration?", "Chills?"],
+                "conditions": ["Influenza", "Common Cold", "Malaria", "COVID-19", "Dengue"],
+                "questions": ["Temperature?", "Duration?", "Chills/Sweating?", "Recent travel?"],
                 "urgency": "medium"
             },
             "cough": {
-                "conditions": ["Bronchitis", "Asthma", "Allergy"],
-                "questions": ["Dry/Productive?", "Duration?", "Breathing difficulty?"],
+                "conditions": ["Bronchitis", "Asthma", "Allergy", "COVID-19", "Tuberculosis"],
+                "questions": ["Dry/Productive?", "Duration?", "Blood in phlegm?", "Smoking history?"],
                 "urgency": "low"
             },
             "headache": {
-                "conditions": ["Migraine", "Tension Headache", "Sinusitis"],
-                "questions": ["Location?", "Intensity?", "Duration?"],
+                "conditions": ["Migraine", "Tension Headache", "Sinusitis", "Hypertension"],
+                "questions": ["Location?", "Intensity (1-10)?", "Duration?", "Visual disturbances?"],
+                "urgency": "medium"
+            },
+            "fatigue": {
+                "conditions": ["Anemia", "Depression", "Chronic Fatigue", "Thyroid Issues"],
+                "questions": ["Duration?", "Sleep quality?", "Associated with other symptoms?"],
+                "urgency": "low"
+            },
+            "nausea": {
+                "conditions": ["Food Poisoning", "Migraine", "Gastroenteritis", "Pregnancy"],
+                "questions": ["Vomiting?", "Recent food intake?", "Pregnancy possibility?"],
+                "urgency": "medium"
+            },
+            "chest pain": {
+                "conditions": ["Angina", "Heart Attack", "Costochondritis", "Anxiety"],
+                "questions": ["Type (sharp/dull)?", "Duration?", "Radiation to arms?", "Shortness of breath?"],
+                "urgency": "high"
+            },
+            "shortness of breath": {
+                "conditions": ["Asthma", "Pneumonia", "Heart Failure", "Anxiety Attack"],
+                "questions": ["At rest or exertion?", "Duration?", "Wheezing?", "Chest pain?"],
+                "urgency": "high"
+            },
+            "abdominal pain": {
+                "conditions": ["Appendicitis", "Gallstones", "UTI", "Irritable Bowel"],
+                "questions": ["Location?", "Type (cramping/sharp)?", "Bowel changes?", "Fever?"],
+                "urgency": "medium"
+            },
+            "dizziness": {
+                "conditions": ["Vertigo", "Low Blood Pressure", "Anemia", "Dehydration"],
+                "questions": ["Spinning sensation?", "Triggered by movement?", "Recent head injury?"],
+                "urgency": "medium"
+            },
+            "rash": {
+                "conditions": ["Allergy", "Eczema", "Measles", "Chickenpox"],
+                "questions": ["Location?", "Itchy?", "Fever?", "Recent medication?"],
+                "urgency": "low"
+            },
+            "joint pain": {
+                "conditions": ["Arthritis", "Gout", "Lupus", "Lyme Disease"],
+                "questions": ["Which joints?", "Swelling?", "Morning stiffness?", "Recent injury?"],
+                "urgency": "low"
+            },
+            "sore throat": {
+                "conditions": ["Strep Throat", "Tonsillitis", "Common Cold", "COVID-19"],
+                "questions": ["Pain level?", "Difficulty swallowing?", "Fever?", "Cough?"],
+                "urgency": "low"
+            },
+            "back pain": {
+                "conditions": ["Muscle Strain", "Herniated Disc", "Kidney Infection", "Arthritis"],
+                "questions": ["Location?", "Radiation to legs?", "Recent injury?", "Fever?"],
+                "urgency": "medium"
+            },
+            "diarrhea": {
+                "conditions": ["Gastroenteritis", "Food Poisoning", "IBD", "Infection"],
+                "questions": ["Duration?", "Blood in stool?", "Fever?", "Recent travel?"],
+                "urgency": "medium"
+            },
+            "weight loss": {
+                "conditions": ["Hyperthyroidism", "Diabetes", "Cancer", "Depression"],
+                "questions": ["Amount lost?", "Time period?", "Appetite changes?", "Other symptoms?"],
                 "urgency": "medium"
             }
         }
