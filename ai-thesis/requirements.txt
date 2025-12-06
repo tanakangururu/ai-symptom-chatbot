@@ -1,0 +1,3 @@
+# AI Symptom Chatbot - Requirements
+# Only external dependency for testing
+pytest>=6.2.0
