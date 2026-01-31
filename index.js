@@ -7,16 +7,53 @@
 
 require("dotenv").config();
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const http = require('http');
+
+// ============================================
+// HEROKU WEB SERVER (keeps the app alive)
+// ============================================
+const PORT = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Sangoma Health Bot</title>
+            <style>
+                body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+                h1 { color: #2e7d32; }
+                .status { background: #e8f5e9; padding: 15px; border-radius: 8px; }
+                a { color: #1976d2; }
+            </style>
+        </head>
+        <body>
+            <h1>🏥 Sangoma Health Bot</h1>
+            <div class="status">
+                <p><strong>Status:</strong> ✅ Running</p>
+                <p><strong>Platform:</strong> Telegram</p>
+                <p><strong>Conditions:</strong> 12 illnesses supported</p>
+            </div>
+            <p>Chat with the bot on Telegram: <a href="https://t.me/sangoma_x7k2_bot">@sangoma_x7k2_bot</a></p>
+            <p><em>Developer: Tanaka Ngururu</em></p>
+        </body>
+        </html>
+    `);
+});
+
+server.listen(PORT, () => {
+    console.log(`🌐 Web server running on port ${PORT}`);
+});
 
 const chatWithOpenAI = require("./openaiApi");
 const systemPrompt = require("./prompt");
 const symptomsData = require("./symptoms.json");
 
 // ============================================
-// CONFIGURATION - Uses TELEGRAM_BOT_TOKEN
-// Get your token from @BotFather on Telegram
+// CONFIGURATION - Check for bot token
 // ============================================
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+let TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 // In-memory session state per chat
 const sessions = {};
@@ -338,19 +375,26 @@ async function main() {
     console.log("   Developer: Tanaka Ngururu");
     console.log("═══════════════════════════════════════════\n");
 
-    // Check if tokens are missing and run interactive setup
-    if (!TELEGRAM_BOT_TOKEN || !process.env.OPENAI_API_KEY) {
+    // Check if TELEGRAM_BOT_TOKEN is missing or empty
+    if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN.trim() === "" || TELEGRAM_BOT_TOKEN === "your-telegram-bot-token-here") {
+        console.log("⚠️  TELEGRAM_BOT_TOKEN not found in .env file\n");
         await interactiveSetup();
-        // Re-read the token after setup
-        require("dotenv").config({ override: true });
     }
 
-    // Get the token (might have been updated by setup)
-    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    // Re-read environment after potential setup
+    require("dotenv").config({ override: true });
+    TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
-    if (!botToken) {
+    if (!TELEGRAM_BOT_TOKEN) {
         console.error("❌ Still missing TELEGRAM_BOT_TOKEN. Please restart.");
         process.exit(1);
+    }
+
+    // Check OpenAI key
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.trim() === "") {
+        console.log("⚠️  OPENAI_API_KEY not found in .env file\n");
+        await interactiveSetup();
+        require("dotenv").config({ override: true });
     }
 
     // Check symptoms database
@@ -363,15 +407,31 @@ async function main() {
     console.log("Connecting to Telegram...");
 
     try {
-        const url = `https://api.telegram.org/bot${botToken}/getMe`;
+        const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe`;
         const res = await fetch(url, { method: "POST" });
         const data = await res.json();
 
         if (!data.ok) {
-            throw new Error(data.description || "Invalid token");
+            console.error("\n❌ Invalid Bot Token:", data.description);
+            console.log("\nYour token doesn't work. Let's get a new one.\n");
+            await interactiveSetup();
+
+            // Reload and retry
+            require("dotenv").config({ override: true });
+            TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+
+            const retryRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getMe`, { method: "POST" });
+            const retryData = await retryRes.json();
+
+            if (!retryData.ok) {
+                throw new Error(retryData.description || "Invalid token");
+            }
+
+            console.log(`\n✅ Bot: @${retryData.result.username}`);
+        } else {
+            console.log(`\n✅ Bot: @${data.result.username}`);
         }
 
-        console.log(`\n✅ Bot: @${data.result.username}`);
         console.log(`✅ Database: ${symptomsData.illnesses.length} illnesses loaded`);
         console.log(`✅ OpenAI: Ready\n`);
 
@@ -380,9 +440,7 @@ async function main() {
 
     } catch (err) {
         console.error("\n❌ Failed to connect:", err.message);
-        console.log("\n⚠️  Your Bot Token appears to be invalid.");
-        console.log("   Please delete the .env file and run again to re-enter your token.");
-        console.log("   Or manually edit .env with the correct TELEGRAM_BOT_TOKEN\n");
+        console.log("\nPlease check your TELEGRAM_BOT_TOKEN and try again.");
         process.exit(1);
     }
 }

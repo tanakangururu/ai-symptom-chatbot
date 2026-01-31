@@ -1,18 +1,28 @@
 {
-  "name": "projects",
+  "name": "sangoma-health-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered Telegram health assistant that identifies illnesses based on symptoms",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
-    "@google/genai": "^1.39.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^16.3.1",
     "node-fetch": "^3.3.2",
-    "openai": "^6.17.0"
-  }
+    "openai": "^4.28.0"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "health",
+    "medical",
+    "ai",
+    "openai"
+  ],
+  "author": "Tanaka Ngururu",
+  "license": "MIT"
 }
